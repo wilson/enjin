@@ -1,4 +1,5 @@
-### enjin: Meta as a Service | 円陣: クラウドのむこう
+### enjin: Meta as a Service
+### 円陣: クラウドのむこう
 
 > clouds endless clouds climbing beyond
 >
