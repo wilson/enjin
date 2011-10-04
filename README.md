@@ -7,20 +7,27 @@
 >
 > 一休宗純 (Ikkyu)
 
+### Core principles
+
+* The Corrolary to Moore's Law implies that stack depth gets cheaper over time
+* Linear increases in stack depth represent exponential increases in abstraction
+* Your Hypervisor can read your memory, live with it.
+
 ### Description
 
 Pick your own altitude in the cloud. Always a work in progress.
 
-Today's popular cloud implementations generally target a single abstraction of computing, and offer a product or set of products using it. Customers often have complex and evolving needs however, and most clouds either abdicate automation of key infrastructure (e.g. failure recovery, DNS), or box customers in a limited platform abstraction to simplify maintenance. This is understandable, and many such products are successful. If customer needs change enough, previous decisions can start to look like fierce technical debt.
+Today's popular cloud implementations generally target a single abstraction of computing, and offer a product or set of products using it. "Ruby Cloud", "Node.js Cloud", are the terms of the day. Customers often have complex and evolving needs however, and most clouds either abdicate automation of key infrastructure (e.g. key management, failure recovery, DNS), or box customers in a limited platform abstraction to simplify maintenance and development. This is understandable, and many such products are successful. If customer needs change enough, previous decisions can start to look like fierce technical debt.
 
-### Goals
+### Rules
 
+* Commercial cloud or your hardware guarded with guys with rifles
 * Learn from the domain of hierarchical protection to unify IaaS and PaaS
-* Be rid of clouds that can't deploy themselves
+* Don't write encryption software
+* No clouds that can't host and deploy themselves
 * Build a truly fault-tolerant open-source multi-cloud abstraction
-* Strive to be paranoid enough
 
-What does that mean? Just as UNIX systems can create unprivileged users, the IaaS layer should be able to call upon the resources of PaaS-style service implementations.
+What does that mean? Just as UNIX systems can create unprivileged users, the IaaS layer should be able to call upon the resources of PaaS-style service implementations to do its business. It owns them, after all.
 
 ### Concepts
 
@@ -96,6 +103,8 @@ ring 2 services:
 * metric collection
 
 ### Whats That Go Where
+
+(TODO: This section now seems quaintly out of date)
 
     User
     Role
