@@ -9,9 +9,12 @@
 
 ### Core principles
 
-* The Corrolary to Moore's Law implies that stack depth gets cheaper over time
-* Linear increases in stack depth represent exponential increases in abstraction
 * Your Hypervisor can read your memory, live with it.
+* Moore's "Law" implies that stack depth gets cheaper over time.
+* The overall trend is toward dense, bare-bones application VMs bound to diverse services.
+* Linear increases in stack depth represent exponential increases in abstraction.
+* Maintaining OS distributions and packages is lame, let someone else do it.
+* Anything that can be phrased as an asynchronous broadcast on an encrypted socket probably should be.
 
 ### Description
 
@@ -27,7 +30,7 @@ Today's popular cloud implementations generally target a single abstraction of c
 * No clouds that can't host and deploy themselves
 * Build a truly fault-tolerant open-source multi-cloud abstraction
 
-What does that mean? Just as UNIX systems can create unprivileged users, the IaaS layer should be able to call upon the resources of PaaS-style service implementations to do its business. It owns them, after all.
+Just as the root user creates accounts with fewer privileges and continues to manage them, the 'infrastructure' layer should be able to run 'in-platform' when needed for greater isolation and modularity. For example, you might imagine taking a backup of yourself by starting a 'guest' and granting it very specific privileges to do so, thereby benefiting from existing, well-tested isolation techniques.
 
 ### Concepts
 
@@ -38,23 +41,33 @@ ring 0 is Meta as a Service, ring 1 is Infrastructure as a Service, ring 2 is Pl
 * a 'ring 2' node typically supervises only its own internal processes
 
 One possible ring 2 node is a UNIX user, but it could be a nested VM or FreeBSD jail.
-In a PaaS offering a ring 2 node would generally be serving HTTP traffic on a port allocated to it by ring 1.
+In a typical PaaS a ring 2 node would generally be serving HTTP traffic on a port allocated to it by ring 1.
 
 A ring 0 node could be a physical machine, a VM with the privileges required to instantiate others like itself, or anything else with suitable resources.
 
-Each ring manages the ACLs and keys for the ring it contains.
-Rings communicate with private pub/sub networks e.g. ZeroMQ, NATS, &c.
-Private channels accept onl signed messages from whitelisted origins.
+Each ring manages access to the ring it contains, whether that means virtualizing network devices or just running iptables commands.
+Rings communicate with private broadcast messaging networks e.g. ZeroMQ, NATS, &c.
+Private channels carry signed messages from whitelisted hosts. We trust the ring that runs us to tell us of new trusted keys and hosts.
 
 ### Infrastructure as a Service (IaaS)
 
 Groups of machines that share a locality, either physical (in the same rack) or logical (on some mysteriously-fast private network with each other) are a key abstraction for infrastructure.
-Let's call them 'Compartments'. They might as well be able to contain other compartments, and be a directed graph. Think NUMA shenanigans. Ring 0 cares about these though ring 1 agents have limited ability to request to be instantiated in a specific one.
+Let's call them 'Compartments'. They might as well be able to contain other compartments, and be a directed graph.
+This is really just more metadata and is used to decide what to do while running machines.
+The point is that you care about both:
 
-> I would like to collect power usage metrics at this level as well, especially since actual machines in racks these days tend to be homogenous. HP has their neat vertically-cooled blades, Cisco has the 'Unified Computing System', &c.
+* Which 'partition' your fellow nodes are in
+* What group or role you are in (database slave, redis server, user with resources on ubuntu vm)
+
+Traditionally the latter is called a 'Tier', and the former 'compartmentalization' is implemented in some buggy ad-hoc management code. Let's address it directly.
+At the end of the day you have, for example, a master PostgreSQL server and a pile of slaves. You need to be able to transactionally represent the idea of a slave being promoted to master and a new slave being brought online to replace the "pawn" you just made a "queen". Everything will go a lot better if you do that in the same datacenter as the failed master, while you also ensure your slaves are geographically distributed.
+
+This is going to come in handy for labeling power metrics as well. They can be rolled up by logical grouping.
+
+> (Especially since actual machines in racks these days tend to be homogenous. HP has their neat vertically-cooled blades, Cisco has the 'Unified Computing System', &c.)
 
 These compartments can share private communications with each other, and agree on reciprocal access to each other if needed. Assume such links have the semantics of OpenVPN.
-In an IaaS offering, both ring 1 (the services running the product) and ring 2 (customer instances) may be running on the same hypervisor.
+In an IaaS offering, both ring 1 (the services running the product) and ring 2 (customer instances) may be running on the same hypervisor, though faster machines will eventually make this not much of a performance optimization. Honestly though, you end up trusting the bare-metal hypervisor. This is reality after all, and the guy who designed the hardware could be a spy.
 
 ### Platform as a Service (PaaS)
 
@@ -76,17 +89,19 @@ Arguably a 'ring 2 compartment' is analogous to 'customer application environmen
 ring 0 services:
 
 * meta http api
+* ip address assignment
 * key generation
-* node authentication
-* traffic managers, bastions
+* security configuration management
 * ring 0 resource allocation (bootstrap)
-* ring 1 resource allocation
+* ring 1 instance management
+* ring 1 resource allocation (e.g. creating persistent volumes)
 
 ring 1 services:
 
 * http api
+* dns
 * user authentication
-* distributed data
+* persistent data storage
 * package management (os packages,gems, &c)
 * vm pool management
 * infrastructure monitoring
@@ -106,7 +121,7 @@ ring 2 services:
 
 (TODO: This section now seems quaintly out of date)
 
-    User
+    Account
     Role
     Membership
     Network
@@ -116,21 +131,28 @@ ring 2 services:
     AccessRuleSet
     AccessRule
     Compartment
-      > ring
-      > parent_compartment
+      >  uuid
+      >  ring
+      >  type
+      >  parent_compartment
+    Tier
+      >  uuid
+      >  ring
+      >  label
     Node
       >  uuid
       >  ring
       >  label
       >  supervision_strategy
+      >  tiers
       >  compartment
-    JobOffer
     NodeObservation
       >  node_id
       >  observation_strategy
       >  state
       >  timestamp
+    Task
 
 ![Mimosa](http://farm2.static.flickr.com/1124/909585864_b603258792_m.jpg "Mimosa")
 
-つずく。。
+つづく。。

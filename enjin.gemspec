@@ -11,10 +11,9 @@ spec = Gem::Specification.new do |s|
   s.authors = ["Wilson Bilkovich"]
   s.email   = ["wilson@supremetyrant.com"]
   s.add_dependency('nats', '~> 0.4.10')
-  s.add_dependency('em-http-request', '~> 0.3.0')
-  s.add_dependency('goliath', '~> 0.9.1')
-  s.add_dependency('bcrypt-ruby', '~> 2.1.4')
-  s.add_dependency('ruby-hmac', '~> 0.4.0')
+  s.add_dependency('goliath', '~> 0.9.2')
+  s.add_dependency('bcrypt-ruby', '~> 2.1')
+  s.add_dependency('ruby-hmac', '~> 0.4')
   # TODO
   # s.require_paths = ['lib']
   # s.bindir = 'bin'
